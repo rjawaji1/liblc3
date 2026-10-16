@@ -45,7 +45,7 @@ step :: proc(lc3: ^LC3){
 }
 
 process_br :: proc(lc3: ^LC3, instruction: u16) {
-	pcoffset9 := extract_bits(instruction, 0, 9)
+	pcoffset9 := sign_extend(extract_bits(instruction, 0, 9))
 	nzp := extract_bits(instruction, 9, 3)
 
 	if (nzp != 0) && ((u16(lc3.cc) & nzp) == 0) do return
