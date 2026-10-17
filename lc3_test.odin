@@ -18,6 +18,6 @@ add_test :: proc(t: ^testing.T){
 	testing.expect(
 		t,
 		lc3.registers[0x0] == 30,
-		"Add Instruction failed to equal to 30"
+		"Add Instruction failed to equal to 30",
 	)
 }
