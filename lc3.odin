@@ -23,6 +23,12 @@ init :: proc(lc3: ^LC3){
 	register_trap_halt(lc3)
 }
 
+load_buffer :: proc(lc3: ^LC3, buffer: []u16){
+	lc3.pc = buffer[0]
+
+	copy(lc3.memory[lc3.pc:], buffer[1:])
+}
+
 step :: proc(lc3: ^LC3) -> (err: int = 0) {
 	if lc3.halted do return
 
