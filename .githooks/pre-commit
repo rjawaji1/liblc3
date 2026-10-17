@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+
+odin check . -no-entry-point -vet -strict-style
