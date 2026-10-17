@@ -80,7 +80,7 @@ process_br :: proc(lc3: ^LC3, instruction: u16) {
 	pcoffset9 := extract_pcoffset9(instruction)
 	nzp := extract_bits(instruction, 9, 3)
 
-	if (nzp != 0) && ((u16(lc3.cc) & nzp) == 0) do return
+	if (u16(lc3.cc) & nzp) == 0 do return
 
 	lc3.pc += pcoffset9
 }
