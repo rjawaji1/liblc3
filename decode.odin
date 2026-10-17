@@ -61,7 +61,7 @@ extract_pcoffset9 :: proc(instruction: u16) -> u16{
 
 }
 
-extract_pcoffset6 :: proc(instruction: u16) -> u16 {
+extract_offset6 :: proc(instruction: u16) -> u16 {
 	return u16(sign_extend(extract_bits(instruction, 0, 6), 6))
 
 }
