@@ -34,7 +34,7 @@ step :: proc(lc3: ^LC3){
 	case .Ldi:      process_ldi(lc3, instruction)
 	case .Ldr:      process_ldr(lc3, instruction)
 	case .Lea:      process_lea(lc3, instruction)
-	case .Not:      fmt.printfln("Unimplemented Instruction: Not")
+	case .Not:      process_not(lc3, instruction)
 	case .Rti:      fmt.printfln("Unimplemented Instruction: Rti")
 	case .St:       fmt.printfln("Unimplemented Instruction: St")
 	case .Sti:      fmt.printfln("Unimplemented Instruction: Sti")
@@ -136,6 +136,14 @@ process_lea :: proc(lc3: ^LC3, instruction: u16){
 	pcoffset9 := extract_pcoffset9(instruction)
 
 	lc3.registers[reg_dst] = lc3.pc + pcoffset9
+	update_condition_codes(lc3, reg_dst)
+}
+
+process_not :: proc(lc3: ^LC3, instruction: u16){
+	reg_dst := extract_reg_dst(instruction)
+	reg_src := extract_reg_src1(instruction)
+
+	lc3.registers[reg_dst] = ~lc3.registers[reg_src]
 	update_condition_codes(lc3, reg_dst)
 }
 
