@@ -2,7 +2,7 @@ package lc3
 
 import "core:fmt"
 
-MEMORY_SIZE :: 0xFFFF
+MEMORY_SIZE :: 0x10000
 
 LC3 :: struct {
 	memory:    [MEMORY_SIZE]u16,
