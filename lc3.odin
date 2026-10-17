@@ -25,12 +25,12 @@ step :: proc(lc3: ^LC3){
 	lc3.pc += 1
 
 	switch opcode {
-	case .Br:       fmt.printfln("Unimplemented Instruction: Br")
+	case .Br:       process_br(lc3, instruction)
 	case .Add:      process_add(lc3, instruction)
 	case .Ld:       fmt.printfln("Unimplemented Instruction: Ld")
 	case .St:       fmt.printfln("Unimplemented Instruction: St")
 	case .Jsr_Jsrr: fmt.printfln("Unimplemented Instruction: Jsr_Jsrr")
-	case .And:      fmt.printfln("Unimplemented Instruction: And")
+	case .And:      process_and(lc3, instruction)
 	case .Ldr:      fmt.printfln("Unimplemented Instruction: Ldr")
 	case .Str:      fmt.printfln("Unimplemented Instruction: Str")
 	case .Rti:      fmt.printfln("Unimplemented Instruction: Rti")
@@ -42,15 +42,6 @@ step :: proc(lc3: ^LC3){
 	case .Lea:      fmt.printfln("Unimplemented Instruction: Lea")
 	case .Trap:     fmt.printfln("Unimplemented Instruction: Trap")
 	}
-}
-
-process_br :: proc(lc3: ^LC3, instruction: u16) {
-	pcoffset9 := sign_extend(extract_bits(instruction, 0, 9))
-	nzp := extract_bits(instruction, 9, 3)
-
-	if (nzp != 0) && ((u16(lc3.cc) & nzp) == 0) do return
-
-	lc3.pc += pcoffset9
 }
 
 process_add :: proc(lc3: ^LC3, instruction: u16){
@@ -68,6 +59,32 @@ process_add :: proc(lc3: ^LC3, instruction: u16){
 
 	lc3.registers[reg_dst] = lc3.registers[reg_src1] + operand
 	update_condition_codes(lc3, reg_dst)
+}
+
+process_and :: proc(lc3: ^LC3, instruction: u16){
+	reg_dst := extract_bits(instruction, 9, 3)
+	reg_src1 := extract_bits(instruction, 6, 3)
+	operand: u16
+
+	if is_bit_set(instruction, 5) {
+		imm5 := extract_bits(instruction, 0, 5)
+		operand = u16(sign_extend(imm5, 5))
+	} else {
+		reg_src2 := extract_bits(instruction, 0, 3)
+		operand = lc3.registers[reg_src2]
+	}
+
+	lc3.registers[reg_dst] = lc3.registers[reg_src1] & operand
+	update_condition_codes(lc3, reg_dst)
+}
+
+process_br :: proc(lc3: ^LC3, instruction: u16) {
+	pcoffset9 := u16(sign_extend(extract_bits(instruction, 0, 9), 9))
+	nzp := extract_bits(instruction, 9, 3)
+
+	if (nzp != 0) && ((u16(lc3.cc) & nzp) == 0) do return
+
+	lc3.pc += pcoffset9
 }
 
 update_condition_codes :: proc(lc3: ^LC3, register: u16){
