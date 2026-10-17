@@ -29,7 +29,7 @@ step :: proc(lc3: ^LC3){
 	case .Add:      process_add(lc3, instruction)
 	case .Ld:       fmt.printfln("Unimplemented Instruction: Ld")
 	case .St:       fmt.printfln("Unimplemented Instruction: St")
-	case .Jsr_Jsrr: fmt.printfln("Unimplemented Instruction: Jsr_Jsrr")
+	case .Jsr_Jsrr: process_jsr_jsrr(lc3, instruction)
 	case .And:      process_and(lc3, instruction)
 	case .Ldr:      fmt.printfln("Unimplemented Instruction: Ldr")
 	case .Str:      fmt.printfln("Unimplemented Instruction: Str")
@@ -37,7 +37,7 @@ step :: proc(lc3: ^LC3){
 	case .Not:      fmt.printfln("Unimplemented Instruction: Not")
 	case .Ldi:      fmt.printfln("Unimplemented Instruction: Ldi")
 	case .Sti:      fmt.printfln("Unimplemented Instruction: Sti")
-	case .Jmp_Ret:  fmt.printfln("Unimplemented Instruction: Jmp_Ret")
+	case .Jmp_Ret:  process_jmp_ret(lc3, instruction)
 	case .Reserved: fmt.printfln("Unimplemented Instruction: Reserved")
 	case .Lea:      fmt.printfln("Unimplemented Instruction: Lea")
 	case .Trap:     fmt.printfln("Unimplemented Instruction: Trap")
@@ -45,15 +45,14 @@ step :: proc(lc3: ^LC3){
 }
 
 process_add :: proc(lc3: ^LC3, instruction: u16){
-	reg_dst := extract_bits(instruction, 9, 3)
-	reg_src1 := extract_bits(instruction, 6, 3)
+	reg_dst := extract_reg_dst(instruction)
+	reg_src1 := extract_reg_src1(instruction)
 
 	operand: u16
 	if is_bit_set(instruction, 5) {
-		imm5 := extract_bits(instruction, 0, 5)
-		operand = u16(sign_extend(imm5, 5))
+		operand = extract_imm5(instruction)
 	} else {
-		reg_src2 := extract_bits(instruction, 0, 3)
+		reg_src2 := extract_reg_src2(instruction)
 		operand = lc3.registers[reg_src2]
 	}
 
@@ -62,15 +61,14 @@ process_add :: proc(lc3: ^LC3, instruction: u16){
 }
 
 process_and :: proc(lc3: ^LC3, instruction: u16){
-	reg_dst := extract_bits(instruction, 9, 3)
-	reg_src1 := extract_bits(instruction, 6, 3)
+	reg_dst := extract_reg_dst(instruction)
+	reg_src1 := extract_reg_src1(instruction)
 	operand: u16
 
 	if is_bit_set(instruction, 5) {
-		imm5 := extract_bits(instruction, 0, 5)
-		operand = u16(sign_extend(imm5, 5))
+		operand = extract_imm5(instruction)
 	} else {
-		reg_src2 := extract_bits(instruction, 0, 3)
+		reg_src2 := extract_reg_src2(instruction)
 		operand = lc3.registers[reg_src2]
 	}
 
@@ -79,12 +77,30 @@ process_and :: proc(lc3: ^LC3, instruction: u16){
 }
 
 process_br :: proc(lc3: ^LC3, instruction: u16) {
-	pcoffset9 := u16(sign_extend(extract_bits(instruction, 0, 9), 9))
+	pcoffset9 := extract_pcoffset9(instruction)
 	nzp := extract_bits(instruction, 9, 3)
 
 	if (nzp != 0) && ((u16(lc3.cc) & nzp) == 0) do return
 
 	lc3.pc += pcoffset9
+}
+
+process_jmp_ret :: proc(lc3: ^LC3, instruction: u16) {
+	reg_base := extract_reg_base(instruction)
+	lc3.pc = lc3.registers[reg_base]
+}
+
+process_jsr_jsrr :: proc(lc3: ^LC3, instruction: u16) {
+	target: u16
+	if is_bit_set(instruction, 11) {
+		target = lc3.pc + extract_pcoffset11(instruction)
+	} else {
+		reg_base := extract_reg_base(instruction)
+		target = lc3.registers[reg_base]
+	}
+
+	lc3.registers[0x7] = lc3.pc
+	lc3.pc = target
 }
 
 update_condition_codes :: proc(lc3: ^LC3, register: u16){
