@@ -25,22 +25,22 @@ step :: proc(lc3: ^LC3){
 	lc3.pc += 1
 
 	switch opcode {
-	case .Br:       process_br(lc3, instruction)
 	case .Add:      process_add(lc3, instruction)
-	case .Ld:       fmt.printfln("Unimplemented Instruction: Ld")
-	case .St:       fmt.printfln("Unimplemented Instruction: St")
-	case .Jsr_Jsrr: process_jsr_jsrr(lc3, instruction)
 	case .And:      process_and(lc3, instruction)
-	case .Ldr:      fmt.printfln("Unimplemented Instruction: Ldr")
-	case .Str:      fmt.printfln("Unimplemented Instruction: Str")
-	case .Rti:      fmt.printfln("Unimplemented Instruction: Rti")
-	case .Not:      fmt.printfln("Unimplemented Instruction: Not")
-	case .Ldi:      fmt.printfln("Unimplemented Instruction: Ldi")
-	case .Sti:      fmt.printfln("Unimplemented Instruction: Sti")
+	case .Br:       process_br(lc3, instruction)
 	case .Jmp_Ret:  process_jmp_ret(lc3, instruction)
-	case .Reserved: fmt.printfln("Unimplemented Instruction: Reserved")
-	case .Lea:      fmt.printfln("Unimplemented Instruction: Lea")
+	case .Jsr_Jsrr: process_jsr_jsrr(lc3, instruction)
+	case .Ld:       process_ld(lc3, instruction)
+	case .Ldi:      process_ldi(lc3, instruction)
+	case .Ldr:      process_ldr(lc3, instruction)
+	case .Lea:      process_lea(lc3, instruction)
+	case .Not:      fmt.printfln("Unimplemented Instruction: Not")
+	case .Rti:      fmt.printfln("Unimplemented Instruction: Rti")
+	case .St:       fmt.printfln("Unimplemented Instruction: St")
+	case .Sti:      fmt.printfln("Unimplemented Instruction: Sti")
+	case .Str:      fmt.printfln("Unimplemented Instruction: Str")
 	case .Trap:     fmt.printfln("Unimplemented Instruction: Trap")
+	case .Reserved: fmt.printfln("Unimplemented Instruction: Reserved")
 	}
 }
 
@@ -101,6 +101,42 @@ process_jsr_jsrr :: proc(lc3: ^LC3, instruction: u16) {
 
 	lc3.registers[0x7] = lc3.pc
 	lc3.pc = target
+}
+
+process_ld :: proc(lc3: ^LC3, instruction: u16){
+	reg_dst := extract_reg_dst(instruction)
+	pcoffset9 := extract_pcoffset9(instruction)
+
+	address := lc3.pc + pcoffset9
+	lc3.registers[reg_dst] = lc3.memory[address]
+	update_condition_codes(lc3, reg_dst)
+}
+
+process_ldi :: proc(lc3: ^LC3, instruction: u16){
+	reg_dst := extract_reg_dst(instruction)
+	pcoffset9 := extract_pcoffset9(instruction)
+
+	address := lc3.memory[lc3.pc + pcoffset9]
+	lc3.registers[reg_dst] = lc3.memory[address]
+	update_condition_codes(lc3, reg_dst)
+}
+
+process_ldr :: proc(lc3: ^LC3, instruction: u16){
+	reg_dst := extract_reg_dst(instruction)
+	reg_base := extract_reg_base(instruction)
+	offset6 := extract_offset6(instruction)
+
+	address := lc3.registers[reg_base] + offset6
+	lc3.registers[reg_dst] = lc3.memory[address]
+	update_condition_codes(lc3, reg_dst)
+}
+
+process_lea :: proc(lc3: ^LC3, instruction: u16){
+	reg_dst := extract_reg_dst(instruction)
+	pcoffset9 := extract_pcoffset9(instruction)
+
+	lc3.registers[reg_dst] = lc3.pc + pcoffset9
+	update_condition_codes(lc3, reg_dst)
 }
 
 update_condition_codes :: proc(lc3: ^LC3, register: u16){
