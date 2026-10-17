@@ -1,7 +1,5 @@
 package lc3
 
-import "core:fmt"
-
 MEMORY_SIZE :: 0x10000
 
 LC3 :: struct {
@@ -9,16 +7,25 @@ LC3 :: struct {
 	registers: [8]u16,
 	pc:	       u16,
 	cc:        Condition_Code,
+
+	traps:     map[u8]Trap_Handler,
+	halted:    bool,
 }
 
 init :: proc(lc3: ^LC3){
 	lc3^ = LC3 {
 		pc = 0x3000,
 		cc = .N,
+		halted = false,
 	}
+
+	// Register Traps
+	register_trap_halt(lc3)
 }
 
-step :: proc(lc3: ^LC3){
+step :: proc(lc3: ^LC3) -> (err: int = 0) {
+	if lc3.halted do return
+
 	instruction := lc3.memory[lc3.pc]
 	opcode := Opcode(extract_bits(instruction, 12, 4))
 
@@ -35,13 +42,15 @@ step :: proc(lc3: ^LC3){
 	case .Ldr:      process_ldr(lc3, instruction)
 	case .Lea:      process_lea(lc3, instruction)
 	case .Not:      process_not(lc3, instruction)
-	case .Rti:      fmt.printfln("Unimplemented Instruction: Rti")
+	case .Rti:      err = 1
 	case .St:       process_st(lc3, instruction)
 	case .Sti:      process_sti(lc3, instruction)
 	case .Str:      process_str(lc3, instruction)
-	case .Trap:     fmt.printfln("Unimplemented Instruction: Trap")
-	case .Reserved: fmt.printfln("Unimplemented Instruction: Reserved")
+	case .Trap:     process_trap(lc3, instruction)
+	case .Reserved: err = 1
 	}
+
+	return
 }
 
 process_add :: proc(lc3: ^LC3, instruction: u16){
@@ -170,6 +179,13 @@ process_str :: proc(lc3: ^LC3, instruction: u16){
 
 	address := lc3.registers[reg_base] + offset6
 	lc3.memory[address] = lc3.registers[reg_dst]
+}
+
+process_trap :: proc(lc3: ^LC3, instruction: u16){
+	trap_vector := u8(extract_bits(instruction, 0, 8))
+
+	handler := lc3.traps[trap_vector]
+	handler.callback(lc3, handler.user_data)
 }
 
 update_condition_codes :: proc(lc3: ^LC3, register: u16){
