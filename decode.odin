@@ -36,7 +36,6 @@ extract_reg_dst :: proc(instruction: u16) -> u16 {
 
 extract_reg_src1 :: proc(instruction: u16) -> u16 {
 	return extract_bits(instruction, 6, 3)
-
 }
 
 extract_reg_src2 :: proc(instruction: u16) -> u16 {
@@ -53,17 +52,14 @@ extract_imm5 :: proc(instruction: u16) -> u16 {
 
 extract_pcoffset11 :: proc(instruction: u16) -> u16 {
 	return u16(sign_extend(extract_bits(instruction, 0, 11), 11))
-
 }
 
 extract_pcoffset9 :: proc(instruction: u16) -> u16{
 	return u16(sign_extend(extract_bits(instruction, 0, 9), 9))
-
 }
 
 extract_offset6 :: proc(instruction: u16) -> u16 {
 	return u16(sign_extend(extract_bits(instruction, 0, 6), 6))
-
 }
 
 is_bit_set :: proc(instruction: u16, position: u8) -> bool {
