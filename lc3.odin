@@ -2,6 +2,14 @@ package lc3
 
 MEMORY_SIZE :: 0x10000
 
+Error :: enum {
+	None,
+	Halted,
+	Unsupported_Trap,
+	Unsupported_Instruction,
+	Reserved_Instruction,
+}
+
 LC3 :: struct {
 	memory:    [MEMORY_SIZE]u16,
 	registers: [8]u16,
@@ -29,8 +37,8 @@ load_buffer :: proc(lc3: ^LC3, buffer: []u16){
 	copy(lc3.memory[lc3.pc:], buffer[1:])
 }
 
-step :: proc(lc3: ^LC3) -> (err: int = 0) {
-	if lc3.halted do return
+step :: proc(lc3: ^LC3) -> (err: Error = .None) {
+	if lc3.halted do return .Halted
 
 	instruction := lc3.memory[lc3.pc]
 	opcode := Opcode(extract_bits(instruction, 12, 4))
@@ -48,12 +56,12 @@ step :: proc(lc3: ^LC3) -> (err: int = 0) {
 	case .Ldr:      process_ldr(lc3, instruction)
 	case .Lea:      process_lea(lc3, instruction)
 	case .Not:      process_not(lc3, instruction)
-	case .Rti:      err = 1
+	case .Rti:      err = .Unsupported_Instruction
 	case .St:       process_st(lc3, instruction)
 	case .Sti:      process_sti(lc3, instruction)
 	case .Str:      process_str(lc3, instruction)
-	case .Trap:     process_trap(lc3, instruction)
-	case .Reserved: err = 1
+	case .Trap:     err = process_trap(lc3, instruction)
+	case .Reserved: err = .Reserved_Instruction
 	}
 
 	return
@@ -187,11 +195,15 @@ process_str :: proc(lc3: ^LC3, instruction: u16){
 	lc3.memory[address] = lc3.registers[reg_dst]
 }
 
-process_trap :: proc(lc3: ^LC3, instruction: u16){
+process_trap :: proc(lc3: ^LC3, instruction: u16) -> (err: Error = .None){
 	trap_vector := u8(extract_bits(instruction, 0, 8))
 
-	handler := lc3.traps[trap_vector]
+	handler, ok := lc3.traps[trap_vector]
+	if !ok do return .Unsupported_Trap
+
 	handler.callback(lc3, handler.user_data)
+
+	return
 }
 
 update_condition_codes :: proc(lc3: ^LC3, register: u16){
