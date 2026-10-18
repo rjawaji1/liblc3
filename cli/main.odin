@@ -11,6 +11,7 @@ main :: proc() {
 	defer free(runtime)
 
 	lc3.init(runtime)
+	defer lc3.destroy(runtime)
 
 	lc3.register_trap(runtime, 0x27, reg_callback, nil)
 

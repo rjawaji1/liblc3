@@ -31,6 +31,10 @@ init :: proc(lc3: ^LC3){
 	register_trap_halt(lc3)
 }
 
+destroy :: proc(lc3: ^LC3){
+	delete(lc3.traps)
+}
+
 load_buffer :: proc(lc3: ^LC3, buffer: []u16){
 	lc3.pc = buffer[0]
 
