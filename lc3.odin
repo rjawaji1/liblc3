@@ -81,7 +81,9 @@ step :: proc(lc3: ^LC3) -> (err: Error = .None) {
 	return
 }
 
-process_add :: proc(lc3: ^LC3, instruction: u16){
+
+@(private)
+process_add :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_src1 := extract_reg_src1(instruction)
 
@@ -97,7 +99,8 @@ process_add :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_and :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_and :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_src1 := extract_reg_src1(instruction)
 	operand: u16
@@ -113,7 +116,8 @@ process_and :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_br :: proc(lc3: ^LC3, instruction: u16) {
+@(private)
+process_br :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	pcoffset9 := extract_pcoffset9(instruction)
 	nzp := extract_bits(instruction, 9, 3)
 
@@ -122,12 +126,14 @@ process_br :: proc(lc3: ^LC3, instruction: u16) {
 	lc3.pc += pcoffset9
 }
 
-process_jmp_ret :: proc(lc3: ^LC3, instruction: u16) {
+@(private)
+process_jmp_ret :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_base := extract_reg_base(instruction)
 	lc3.pc = lc3.registers[reg_base]
 }
 
-process_jsr_jsrr :: proc(lc3: ^LC3, instruction: u16) {
+@(private)
+process_jsr_jsrr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	target: u16
 	if is_bit_set(instruction, 11) {
 		target = lc3.pc + extract_pcoffset11(instruction)
@@ -140,7 +146,8 @@ process_jsr_jsrr :: proc(lc3: ^LC3, instruction: u16) {
 	lc3.pc = target
 }
 
-process_ld :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_ld :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -149,7 +156,8 @@ process_ld :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_ldi :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_ldi :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -158,7 +166,8 @@ process_ldi :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_ldr :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_ldr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_base := extract_reg_base(instruction)
 	offset6 := extract_offset6(instruction)
@@ -168,7 +177,8 @@ process_ldr :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_lea :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_lea :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -176,7 +186,8 @@ process_lea :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_not :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_not :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_src := extract_reg_src1(instruction)
 
@@ -184,7 +195,8 @@ process_not :: proc(lc3: ^LC3, instruction: u16){
 	update_condition_codes(lc3, reg_dst)
 }
 
-process_st :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_st :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -192,7 +204,8 @@ process_st :: proc(lc3: ^LC3, instruction: u16){
 	lc3.memory[address] = lc3.registers[reg_dst]
 }
 
-process_sti :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_sti :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -200,7 +213,8 @@ process_sti :: proc(lc3: ^LC3, instruction: u16){
 	lc3.memory[address] = lc3.registers[reg_dst]
 }
 
-process_str :: proc(lc3: ^LC3, instruction: u16){
+@(private)
+process_str :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_base := extract_reg_base(instruction)
 	offset6 := extract_offset6(instruction)
@@ -209,7 +223,8 @@ process_str :: proc(lc3: ^LC3, instruction: u16){
 	lc3.memory[address] = lc3.registers[reg_dst]
 }
 
-process_trap :: proc(lc3: ^LC3, instruction: u16) -> (err: Error = .None){
+@(private)
+process_trap :: #force_inline proc(lc3: ^LC3, instruction: u16) -> (err: Error = .None) {
 	trap_vector := u8(extract_bits(instruction, 0, 8))
 
 	handler, ok := lc3.traps[trap_vector]
@@ -220,7 +235,8 @@ process_trap :: proc(lc3: ^LC3, instruction: u16) -> (err: Error = .None){
 	return
 }
 
-update_condition_codes :: proc(lc3: ^LC3, register: u16){
+@(private)
+update_condition_codes :: proc(lc3: ^LC3, register: u16) {
 	value := lc3.registers[register]
 
 	if value == 0 {
