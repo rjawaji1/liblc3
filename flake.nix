@@ -13,8 +13,8 @@
 	  perSystem = { pkgs, ... }: {
 	    devShells.default = pkgs.mkShell {
 	      packages = [
-    			pkgs.odin
-    			pkgs.ols
+    		  pkgs.odin
+    		  pkgs.ols
   		  ];
 	    };
 	  };
