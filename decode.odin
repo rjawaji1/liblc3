@@ -25,7 +25,7 @@ Condition_Code :: enum u8 {
 	N = 1 << 2,
 }
 
-extract_bits :: proc(instruction: u16, offset, width: u8) -> u16{
+extract_bits :: proc(instruction: u16, offset, width: u8) -> u16 {
 	mask: u16 = (1 << width) - 1
 	return (instruction >> offset) & mask
 }
@@ -54,7 +54,7 @@ extract_pcoffset11 :: proc(instruction: u16) -> u16 {
 	return u16(sign_extend(extract_bits(instruction, 0, 11), 11))
 }
 
-extract_pcoffset9 :: proc(instruction: u16) -> u16{
+extract_pcoffset9 :: proc(instruction: u16) -> u16 {
 	return u16(sign_extend(extract_bits(instruction, 0, 9), 9))
 }
 

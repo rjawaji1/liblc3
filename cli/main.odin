@@ -14,8 +14,8 @@ main :: proc() {
 
 	lc3.register_trap(runtime, 0x27, reg_callback, nil)
 
-	reg_callback :: proc(lc3: ^lc3.LC3, user_data: rawptr){
-		for i in 0..<8 {
+	reg_callback :: proc(lc3: ^lc3.LC3, user_data: rawptr) {
+		for i in 0 ..< 8 {
 			fmt.printfln("Reg 0x%X : 0x%X", i, lc3.registers[i])
 		}
 	}

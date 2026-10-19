@@ -7,7 +7,8 @@ step :: proc(lc3: ^LC3) -> (err: Error = .None) {
 	opcode := Opcode(extract_bits(instruction, 12, 4))
 
 	lc3.pc += 1
-
+	
+	// odinfmt: disable
 	switch opcode {
 	case .Add:      process_add(lc3, instruction)
 	case .And:      process_and(lc3, instruction)
@@ -26,6 +27,7 @@ step :: proc(lc3: ^LC3) -> (err: Error = .None) {
 	case .Trap:     err = process_trap(lc3, instruction)
 	case .Reserved: err = .Reserved_Instruction
 	}
+	// odinfmt: enable
 
 	return
 }
@@ -189,10 +191,10 @@ update_condition_codes :: proc(lc3: ^LC3, register: u16) {
 	value := lc3.registers[register]
 
 	if value == 0 {
-	 	lc3.cc = .Z
+		lc3.cc = .Z
 	} else if is_bit_set(value, 15) {
-	 	lc3.cc = .N
+		lc3.cc = .N
 	} else {
-	 	lc3.cc = .P
+		lc3.cc = .P
 	}
 }

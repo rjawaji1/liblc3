@@ -1,7 +1,7 @@
 package lc3
 
-import "core:os"
 import "core:encoding/endian"
+import "core:os"
 
 MEMORY_SIZE :: 0x10000
 
@@ -16,19 +16,17 @@ Error :: enum {
 LC3 :: struct {
 	memory:     [MEMORY_SIZE]u16,
 	registers:  [8]u16,
-	pc:	        u16,
+	pc:         u16,
 	cc:         Condition_Code,
-
 	traps:      map[u8]Trap_Handler,
 	halted:     bool,
-
 	initial_pc: u16,
 }
 
-init :: proc(lc3: ^LC3){
+init :: proc(lc3: ^LC3) {
 	lc3^ = LC3 {
-		pc = 0x3000,
-		cc = .N,
+		pc     = 0x3000,
+		cc     = .N,
 		halted = false,
 	}
 
@@ -36,14 +34,14 @@ init :: proc(lc3: ^LC3){
 	register_trap_halt(lc3)
 }
 
-reset :: proc(lc3: ^LC3){
+reset :: proc(lc3: ^LC3) {
 	lc3.registers = {}
 	lc3.pc = lc3.initial_pc
 	lc3.cc = .N
 	lc3.halted = false
 }
 
-destroy :: proc(lc3: ^LC3){
+destroy :: proc(lc3: ^LC3) {
 	delete(lc3.traps)
 }
 
@@ -85,7 +83,7 @@ load_file_from_file :: proc(lc3: ^LC3, file: ^os.File) -> bool {
 	}
 
 	for i := 0; i < word_count; i += 1 {
-		word := endian.unchecked_get_u16be(payload[i*2:])
+		word := endian.unchecked_get_u16be(payload[i * 2:])
 		lc3.memory[int(origin) + i] = word
 	}
 
