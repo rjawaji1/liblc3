@@ -20,7 +20,7 @@ main :: proc() {
 		}
 	}
 
-	if !lc3.load_file_from_file(runtime, os.stdin) {
+	if !lc3.load(runtime, os.stdin) {
 		fmt.eprintln("Failed to load program")
 		return
 	}

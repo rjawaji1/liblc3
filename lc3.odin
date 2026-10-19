@@ -46,27 +46,33 @@ destroy :: proc(lc3: ^LC3) {
 }
 
 
-load_file :: proc {
-	load_file_from_path,
-	load_file_from_file,
+load :: proc {
+	load_from_path,
+	load_from_file,
+	load_from_buffer,
 }
 
-load_file_from_path :: proc(lc3: ^LC3, filepath: string) -> bool {
+
+load_from_path :: proc(lc3: ^LC3, filepath: string) -> bool {
 	file, file_err := os.open(filepath)
 	if file_err != nil {
 		return false
 	}
 	defer os.close(file)
-	return load_file_from_file(lc3, file)
+	return load_from_file(lc3, file)
 }
 
-load_file_from_file :: proc(lc3: ^LC3, file: ^os.File) -> bool {
+load_from_file :: proc(lc3: ^LC3, file: ^os.File) -> bool {
 	buffer, read_err := os.read_entire_file(file, context.allocator)
 	defer delete(buffer)
 	if read_err != nil {
 		return false
 	}
 
+	return load_from_buffer(lc3, buffer)
+}
+
+load_from_buffer :: proc(lc3: ^LC3, buffer: []u8) -> bool {
 	origin, ok := endian.get_u16(buffer, .Big)
 	if !ok {
 		return false

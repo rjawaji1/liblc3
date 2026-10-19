@@ -1,5 +1,6 @@
 package lc3
 
+import "core:fmt"
 Opcode :: enum u8 {
 	Br       = 0x0,
 	Add      = 0x1,
@@ -26,6 +27,8 @@ Condition_Code :: enum u8 {
 }
 
 extract_bits :: proc(instruction: u16, offset, width: u8) -> u16 {
+	fmt.assertf(width > 0, "Expected width > 0, got width: %v", width)
+
 	mask: u16 = (1 << width) - 1
 	return (instruction >> offset) & mask
 }
