@@ -10,21 +10,21 @@ step :: proc(lc3: ^LC3) -> (err: Error = .None) {
 	
 	// odinfmt: disable
 	switch opcode {
-	case .Add:      process_add(lc3, instruction)
-	case .And:      process_and(lc3, instruction)
-	case .Br:       process_br(lc3, instruction)
-	case .Jmp_Ret:  process_jmp_ret(lc3, instruction)
-	case .Jsr_Jsrr: process_jsr_jsrr(lc3, instruction)
-	case .Ld:       process_ld(lc3, instruction)
-	case .Ldi:      process_ldi(lc3, instruction)
-	case .Ldr:      process_ldr(lc3, instruction)
-	case .Lea:      process_lea(lc3, instruction)
-	case .Not:      process_not(lc3, instruction)
+	case .Add:      execute_add(lc3, instruction)
+	case .And:      execute_and(lc3, instruction)
+	case .Br:       execute_br(lc3, instruction)
+	case .Jmp_Ret:  execute_jmp_ret(lc3, instruction)
+	case .Jsr_Jsrr: execute_jsr_jsrr(lc3, instruction)
+	case .Ld:       execute_ld(lc3, instruction)
+	case .Ldi:      execute_ldi(lc3, instruction)
+	case .Ldr:      execute_ldr(lc3, instruction)
+	case .Lea:      execute_lea(lc3, instruction)
+	case .Not:      execute_not(lc3, instruction)
 	case .Rti:      err = .Unsupported_Instruction
-	case .St:       process_st(lc3, instruction)
-	case .Sti:      process_sti(lc3, instruction)
-	case .Str:      process_str(lc3, instruction)
-	case .Trap:     err = process_trap(lc3, instruction)
+	case .St:       execute_st(lc3, instruction)
+	case .Sti:      execute_sti(lc3, instruction)
+	case .Str:      execute_str(lc3, instruction)
+	case .Trap:     err = execute_trap(lc3, instruction)
 	case .Reserved: err = .Reserved_Instruction
 	}
 	// odinfmt: enable
@@ -34,7 +34,7 @@ step :: proc(lc3: ^LC3) -> (err: Error = .None) {
 
 
 @(private)
-process_add :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_add :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_src1 := extract_reg_src1(instruction)
 
@@ -51,7 +51,7 @@ process_add :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_and :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_and :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_src1 := extract_reg_src1(instruction)
 	operand: u16
@@ -68,7 +68,7 @@ process_and :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_br :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_br :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	pcoffset9 := extract_pcoffset9(instruction)
 	nzp := extract_bits(instruction, 9, 3)
 
@@ -78,13 +78,13 @@ process_br :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_jmp_ret :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_jmp_ret :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_base := extract_reg_base(instruction)
 	lc3.pc = lc3.registers[reg_base]
 }
 
 @(private)
-process_jsr_jsrr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_jsr_jsrr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	target: u16
 	if is_bit_set(instruction, 11) {
 		target = lc3.pc + extract_pcoffset11(instruction)
@@ -98,7 +98,7 @@ process_jsr_jsrr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_ld :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_ld :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -108,7 +108,7 @@ process_ld :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_ldi :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_ldi :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -118,7 +118,7 @@ process_ldi :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_ldr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_ldr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_base := extract_reg_base(instruction)
 	offset6 := extract_offset6(instruction)
@@ -129,7 +129,7 @@ process_ldr :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_lea :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_lea :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -138,7 +138,7 @@ process_lea :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_not :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_not :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_src := extract_reg_src1(instruction)
 
@@ -147,7 +147,7 @@ process_not :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_st :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_st :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -156,7 +156,7 @@ process_st :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_sti :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_sti :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	pcoffset9 := extract_pcoffset9(instruction)
 
@@ -165,7 +165,7 @@ process_sti :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_str :: #force_inline proc(lc3: ^LC3, instruction: u16) {
+execute_str :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 	reg_dst := extract_reg_dst(instruction)
 	reg_base := extract_reg_base(instruction)
 	offset6 := extract_offset6(instruction)
@@ -175,7 +175,7 @@ process_str :: #force_inline proc(lc3: ^LC3, instruction: u16) {
 }
 
 @(private)
-process_trap :: #force_inline proc(lc3: ^LC3, instruction: u16) -> (err: Error = .None) {
+execute_trap :: #force_inline proc(lc3: ^LC3, instruction: u16) -> (err: Error = .None) {
 	trap_vector := u8(extract_bits(instruction, 0, 8))
 
 	handler, ok := lc3.traps[trap_vector]
