@@ -2,7 +2,6 @@ package main
 
 import "core:fmt"
 import "core:os"
-import "core:encoding/endian"
 
 import lc3 ".."
 
@@ -21,39 +20,15 @@ main :: proc() {
 		}
 	}
 
-	data, err := os.read_entire_file(os.stdin, context.allocator)
-	if err != nil {
-		fmt.eprintln("Read error:", err)
+	if !lc3.load_file_from_file(runtime, os.stdin) {
+		fmt.eprintln("Failed to load program")
 		return
 	}
-	defer delete(data)
-
-	if len(data) < 2 || len(data) % 2 != 0 {
-		fmt.eprintln("Invalid LC-3 object file")
-		return
-	}
-
-	buffer := make([]u16, len(data)/2)
-	defer delete(buffer)
-
-
-	for i in 0..<len(buffer) {
-		buffer[i] = endian.unchecked_get_u16be(data[i*2:])
-	}
-
-	pc := buffer[0]
-	if int(pc) + len(buffer) - 1 > len(runtime.memory) {
-		fmt.eprintln("Program exceeds LC-3 memory")
-		return
-	}
-
-	fmt.printf("PC: 0x%04X (%d)\n", pc, pc)
-
-	fmt.println("Loading Buffer")
-	lc3.load_buffer(runtime, buffer)
-
-	fmt.println("Running")
 	for !runtime.halted {
-		lc3.step(runtime)
+		err := lc3.step(runtime)
+		if err != .None {
+			fmt.eprintfln("Execution failed: %v", err)
+			return
+		}
 	}
 }
