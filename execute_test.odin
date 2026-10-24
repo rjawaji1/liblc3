@@ -1,3 +1,4 @@
+#+private file
 package lc3
 
 import "core:testing"
